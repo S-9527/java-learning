@@ -11,9 +11,9 @@ jobs:
     # 依赖已缓存在 Gradle 的本地仓库里，CI 上会重新下载。
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: '25'
