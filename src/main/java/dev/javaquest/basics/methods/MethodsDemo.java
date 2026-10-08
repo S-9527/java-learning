@@ -102,7 +102,7 @@ public final class MethodsDemo {
             int inner = 10;
             result = inner;
         }
-        // int inner = 20;   // 取消注释会编译报错：找不到符号 inner
+        // int inner = 20;   // 这里已经看不见 inner 了，作用域到上面那个 } 就结束
         return result;
     }
 

@@ -54,7 +54,7 @@ public final class ControlFlowDemo {
         switch (grade) {
             case 4:
                 sum += 4;
-                // 故意不写 break
+                // 这里没有 break，所以下面 case 3 的 sum += 3 也会执行
             case 3:
                 sum += 3;
                 break;
