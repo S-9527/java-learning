@@ -17,90 +17,97 @@ import org.junit.jupiter.api.TestMethodOrder;
  * <p>这个类本身就是文档。方法名是英文（方便 IDE 跳转和搜索），
  * 中文句子放在 {@code @DisplayName} 里。
  *
- * <p>每个 {@code @Nested} 内部分组对应文档里的一节，测试报告里能直接看出层级。
+ * <p>分三组：<b>选择</b>、<b>重复</b>、<b>跳转</b>。这三件事就是改变执行顺序的全部手段。
  */
 @DisplayName("02 流程控制")
 class ControlFlowTest {
 
     @Nested
-    @DisplayName("短路求值")
+    @DisplayName("选择：条件怎么决定走哪条路")
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class ShortCircuit {
+    class Choosing {
 
         @Test
         @Order(1)
-        @DisplayName("&& 左边为 false 时，右边根本不会执行")
-        void andDoesNotEvaluateTheRightSide() {
-            assertThat(ControlFlowDemo.andShortCircuits())
-                    .as("如果右半边被求值，这里会抛 AssertionError。能跑通就说明短路生效了")
+        @DisplayName("&& 左边为 false 时，右边不执行")
+        void andSkipsTheRightSide() {
+            assertThat(ControlFlowDemo.andSkipsTheRightSide())
+                    .as("右边会抛 AssertionError。能跑完就说明 && 短路生效")
                     .isFalse();
         }
 
         @Test
         @Order(2)
-        @DisplayName("|| 左边为 true 时，右边不会执行")
-        void orDoesNotEvaluateTheRightSide() {
-            assertThat(ControlFlowDemo.orShortCircuits())
-                    .as("这是 null 安全检查的写法：左边已经确定答案，就不去碰右边那个可能为 null 的对象")
+        @DisplayName("|| 左边为 true 时，右边不执行")
+        void orSkipsTheRightSide() {
+            assertThat(ControlFlowDemo.orSkipsTheRightSide())
+                    .as("这是 null 安全检查的写法：左边已有答案，就不去碰右边那个可能为 null 的对象")
                     .isTrue();
         }
 
         @Test
         @Order(3)
-        @DisplayName("先判断非空再取值，是 Java 里最常见的短路用法")
-        void nullCheckGuardsTheDereference() {
-            assertThat(ControlFlowDemo.lengthOfMaybeNull(null))
-                    .as("传 null 返回 -1，而不是抛 NullPointerException")
-                    .isEqualTo(-1);
-
-            assertThat(ControlFlowDemo.lengthOfMaybeNull("java"))
-                    .as("传正常字符串返回长度")
+        @DisplayName("非短路的 | 会让两边都执行，所以副作用会发生两次")
+        void bitwiseOrAlwaysEvaluatesBothSides() {
+            assertThat(ControlFlowDemo.orShortCircuitsIncrement())
+                    .as("|| 左边已经是 true，右边被跳过，i 只加了 1 次")
                     .isEqualTo(4);
-        }
-    }
 
-    @Nested
-    @DisplayName("switch")
-    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class Switches {
+            assertThat(ControlFlowDemo.bitwiseOrAlwaysIncrements())
+                    .as("换成单个 | ，右边一定执行，i 加了 2 次。结果都是 true，但副作用次数不同")
+                    .isEqualTo(5);
+        }
 
         @Test
-        @Order(1)
-        @DisplayName("传统 switch 漏写 break 会静默串到下一个 case")
+        @Order(4)
+        @DisplayName("传统 switch 漏写 break 会一路往下走")
         void classicSwitchFallsThroughWhenBreakIsMissing() {
             assertThat(ControlFlowDemo.classicSwitchFallsThrough())
-                    .as("case 4 本该只加 4，但因为漏了 break 又加了 3，得到 7。这类 bug 编译期不报错")
+                    .as("case 4 本该只加 4，但因为漏了 break 又加了 3，得到 7")
                     .isEqualTo(7);
         }
 
         @Test
-        @Order(2)
-        @DisplayName("switch 表达式每个分支返回值，漏写会编译报错")
-        void switchExpressionReturnsDirectly() {
+        @Order(5)
+        @DisplayName("switch 表达式处理 int 时必须写 default")
+        void switchExpressionOnIntNeedsDefault() {
             assertThat(ControlFlowDemo.gradeToLabel(4)).isEqualTo("优秀");
-            assertThat(ControlFlowDemo.gradeToLabel(3)).isEqualTo("良好");
-            assertThat(ControlFlowDemo.gradeToLabel(2)).isEqualTo("及格");
             assertThat(ControlFlowDemo.gradeToLabel(1))
-                    .as("其他值走 default 分支")
+                    .as("int 有无穷多个取值，编译器无法确认你覆盖完了，所以 default 不能省")
                     .isEqualTo("待改进");
         }
 
         @Test
-        @Order(3)
-        @DisplayName("switch 表达式对 enum 做穷尽匹配，不用写 default")
-        void switchExpressionIsExhaustiveOverEnum() {
-            assertThat(ControlFlowDemo.classifySign(-42))
-                    .as("Signum.NEGATIVE 对应 -1")
-                    .isEqualTo(-1);
-            assertThat(ControlFlowDemo.classifySign(0)).isZero();
-            assertThat(ControlFlowDemo.classifySign(42)).isEqualTo(1);
+        @Order(6)
+        @DisplayName("switch 表达式处理枚举时不需要 default")
+        void switchExpressionOnEnumIsExhaustive() {
+            assertThat(ControlFlowDemo.dayTypeToLabel(ControlFlowDemo.DayOfWeek.MONDAY)).isEqualTo("工作日");
+            assertThat(ControlFlowDemo.dayTypeToLabel(ControlFlowDemo.DayOfWeek.SATURDAY)).isEqualTo("休息日");
+            assertThat(ControlFlowDemo.dayTypeToLabel(ControlFlowDemo.DayOfWeek.SUNDAY))
+                    .as("枚举的取值是封闭的，编译器能确认你覆盖完了。删掉某个分支它就会报错")
+                    .isEqualTo("休息日");
+        }
+
+        @Test
+        @Order(7)
+        @DisplayName("三目运算符两个分支类型不同时会提升到更宽的那个")
+        void ternaryPromotesToTheWiderType() {
+            long value = ControlFlowDemo.ternaryPromotesToTheWiderType(true);
+
+            assertThat(value)
+                    .as("int 分支和 long 分支混在一起，整条表达式的结果类型是 long")
+                    .isEqualTo(1L);
+
+            assertThat(ControlFlowDemo.ternaryRequiresExplicitNarrowing(true))
+                    .as("结果要变窄时必须显式转换，否则 long 塞不进 int")
+                    .isEqualTo(1);
         }
     }
 
     @Nested
-    @DisplayName("循环")
+    @DisplayName("重复：同一段代码怎么跑多次")
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class Loops {
+    class Repeating {
 
         @Test
         @Order(1)
@@ -114,58 +121,22 @@ class ControlFlowTest {
 
         @Test
         @Order(2)
-        @DisplayName("条件为 false 时 while 一次都不跑，do-while 至少跑一次")
-        void whileAndDoWhileDifferOnTheFirstCheck() {
-            assertThat(ControlFlowDemo.whileRunsHowManyTimesIfConditionIsFalse())
+        @DisplayName("while 和 do-while 的区别只在「什么时候判断」")
+        void whileAndDoWhileDifferOnWhenTheyCheck() {
+            assertThat(ControlFlowDemo.whileRunsZeroTimesWhenConditionIsFalse())
                     .as("while 先判断后执行，条件一开始就假，循环体一次都不进")
                     .isZero();
 
-            assertThat(ControlFlowDemo.doWhileRunsHowManyTimesIfConditionIsFalse())
+            assertThat(ControlFlowDemo.doWhileRunsOnceWhenConditionIsFalse())
                     .as("do-while 先执行后判断，所以哪怕条件为假也一定会跑一次")
                     .isEqualTo(1);
         }
 
         @Test
         @Order(3)
-        @DisplayName("continue 只跳过本次剩余部分，不终止整个循环")
-        void continueSkipsOnlyTheCurrentIteration() {
-            assertThat(ControlFlowDemo.countBreaksAndContinues(10))
-                    .as("1 到 10 里 5 和 10 被 continue 跳过，剩 8 次")
-                    .isEqualTo(8);
-            assertThat(ControlFlowDemo.countBreaksAndContinues(4))
-                    .as("1 到 4 没有 5 的倍数，一次都不跳过")
-                    .isEqualTo(4);
-        }
-
-        @Test
-        @Order(4)
-        @DisplayName("break 只跳出最内层那一层循环")
-        void breakExitsOnlyTheInnermostLoop() {
-            assertThat(ControlFlowDemo.breakOnlyExitsTheInnermostLoop())
-                    .as("每次外层循环进到 j=2 就 break，只跑了 j=0 和 j=1。三次外层一共 6 次")
-                    .isEqualTo(6);
-        }
-
-        @Test
-        @Order(5)
-        @DisplayName("给循环打标签后，break 标签能一次跳出外层")
-        void labeledBreakExitsTheOuterLoop() {
-            assertThat(ControlFlowDemo.labeledBreakExitsTheOuterLoop())
-                    .as("直接结束整个外层循环，所以只跑了第一轮外层的两次内层")
-                    .isEqualTo(2);
-        }
-    }
-
-    @Nested
-    @DisplayName("增强 for 与集合")
-    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class EnhancedFor {
-
-        @Test
-        @Order(1)
         @DisplayName("增强 for 里的变量是副本，改它不会改回集合")
         void enhancedForCannotWriteBack() {
-            List<Integer> numbers = ControlFlowDemo.enhancedForCannotReplaceElements();
+            List<Integer> numbers = ControlFlowDemo.enhancedForCannotWriteBack();
 
             assertThat(numbers)
                     .as("循环里 x 被乘了 10，但那是局部变量。集合里的元素一个都没变")
@@ -173,40 +144,72 @@ class ControlFlowTest {
         }
 
         @Test
-        @Order(2)
-        @DisplayName("想在遍历中删元素，用 removeIf 而不是增强 for")
+        @Order(4)
+        @DisplayName("在增强 for 里删元素会抛 ConcurrentModificationException")
+        void removingWhileIteratingThrows() {
+            assertThat(ControlFlowDemo.removingWhileIterating())
+                    .as("增强 for 底层是 Iterator，迭代期间改集合结构会被检测到并抛异常")
+                    .isEqualTo("ConcurrentModificationException");
+        }
+
+        @Test
+        @Order(5)
+        @DisplayName("remove(int) 按下标删，remove(Object) 按值删")
+        void removeHasTwoOverloadsAndIntPicksTheIndexOne() {
+            List<Integer> result = ControlFlowDemo.removeByIndexVersusByValue();
+
+            assertThat(result)
+                    .as("第一段 [1,2,3,4].remove(2) 删掉的是下标 2（值 3），剩 [1,2,4]")
+                    .startsWith(1, 2, 4)
+                    .contains(-1);
+
+            assertThat(result)
+                    .as("第二段删掉值为 2 的元素，剩 [1,3,4]。传 int 会选到 remove(int) 那个重载")
+                    .endsWith(1, 3, 4);
+        }
+
+        @Test
+        @Order(6)
+        @DisplayName("要删元素请用 removeIf")
         void removeIfIsTheSafeWayToDelete() {
             List<Integer> numbers = ControlFlowDemo.removeEvenSafely();
 
             assertThat(numbers)
-                    .as("删掉 2、4、6，剩下奇数。直接在增强 for 里 remove 会抛 ConcurrentModificationException")
+                    .as("removeIf 不违反迭代期间不改结构的约定，所以能安全删掉 2、4、6")
                     .containsExactly(1, 3, 5);
         }
     }
 
     @Nested
-    @DisplayName("三目运算符")
+    @DisplayName("跳转：怎么提前离开当前的位置")
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class Ternary {
+    class Jumping {
 
         @Test
         @Order(1)
-        @DisplayName("两个分支类型不同时，自动提升到更宽的那个")
-        void ternaryPromotesToTheWiderType() {
-            long value = ControlFlowDemo.ternaryPicksTheWiderType(true);
-
-            assertThat(value)
-                    .as("int 分支和 long 分支混在一起，整条表达式的结果类型是 long")
-                    .isEqualTo(1L);
+        @DisplayName("continue 只跳过本次，循环继续")
+        void continueSkipsOnlyTheCurrentIteration() {
+            assertThat(ControlFlowDemo.countAfterSkippingMultiplesOfFive())
+                    .as("1 到 10 里 5 和 10 被 continue 跳过，剩 8 次")
+                    .isEqualTo(8);
         }
 
         @Test
         @Order(2)
-        @DisplayName("结果要变窄时，必须显式转换")
-        void ternaryRequiresAnExplicitCastToNarrow() {
-            assertThat(ControlFlowDemo.ternaryRequiresExplicitNarrowing(true))
-                    .as("没有 (int) 这一步就编译不过：long 不能隐式缩回 int")
-                    .isEqualTo(1);
+        @DisplayName("break 只能跳出最内层那一层")
+        void plainBreakExitsOnlyTheInnermostLoop() {
+            assertThat(ControlFlowDemo.plainBreakVisits())
+                    .as("每次外层循环进到 j=2 就 break，只跑了 j=0 和 j=1。三轮外层一共 6 次")
+                    .isEqualTo(6);
+        }
+
+        @Test
+        @Order(3)
+        @DisplayName("标签能让 break 一次跳出多层")
+        void labeledBreakExitsTheOuterLoop() {
+            assertThat(ControlFlowDemo.labeledBreakVisits())
+                    .as("直接结束整个外层循环，所以只跑了第一轮外层的两次内层")
+                    .isEqualTo(2);
         }
     }
 }

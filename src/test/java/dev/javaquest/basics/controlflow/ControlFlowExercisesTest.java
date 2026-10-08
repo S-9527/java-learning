@@ -1,6 +1,11 @@
 package dev.javaquest.basics.controlflow;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.List;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -70,13 +75,47 @@ class ControlFlowExercisesTest {
 
     @Test
     @Order(4)
-    @Disabled("答案：1、3、5。增强 for 改的是局部变量，改不回集合。要删元素得用 list.removeIf(...) 或者按下标遍历。")
+    @Disabled("答案：1、2、3。增强 for 改的是局部变量，改不回集合。要真正写回去得用 numbers.set(i, ...)。")
     @DisplayName("练习 4：在增强 for 里把每个元素乘 10，原列表会变吗？")
     void exerciseEnhancedForCannotWriteBack() {
-        var numbers = new java.util.ArrayList<>(java.util.List.of(1, 2, 3));
+        List<Integer> numbers = new ArrayList<>(List.of(1, 2, 3));
         for (Integer x : numbers) {
             x = x * 10;
         }
         assertThat(numbers).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    @Order(5)
+    @Disabled("答案：因为增强 for 底层是 Iterator，而迭代期间改变集合结构会让迭代器记录的位置失效，" +
+            "实现会抛 ConcurrentModificationException。要删就用 list.removeIf(...)。")
+    @DisplayName("练习 5：为什么在增强 for 里删元素会抛 ConcurrentModificationException？")
+    void exerciseWhyRemoveWhileIteratingFails() {
+        List<Integer> numbers = new ArrayList<>(List.of(1, 2, 3, 4));
+        try {
+            for (int x : numbers) {
+                if (x % 2 == 0) {
+                    numbers.remove(Integer.valueOf(x));
+                }
+            }
+            fail("这里应该抛 ConcurrentModificationException 才对");
+        } catch (ConcurrentModificationException e) {
+            assertThat(e).as("删元素改变了集合结构，迭代器记录的位置失效").isNotNull();
+        }
+    }
+
+    @Test
+    @Order(6)
+    @Disabled("答案：删掉下标 2 那个元素，也就是值为 3 的那个，剩 [1,2,4]。" +
+            "因为传 int 会匹配到 remove(int index) 这个重载。要按值删得写 remove(Integer.valueOf(2))。")
+    @DisplayName("练习 6：[1,2,3,4].remove(2) 删掉的是哪个元素？")
+    void exerciseRemoveOverloadPicksIndex() {
+        List<Integer> numbers = new ArrayList<>(List.of(1, 2, 3, 4));
+        numbers.remove(2);
+        assertThat(numbers).containsExactly(1, 2, 4);
+
+        List<Integer> byValue = new ArrayList<>(List.of(1, 2, 3, 4));
+        byValue.remove(Integer.valueOf(2));
+        assertThat(byValue).as("这才是按值删").containsExactly(1, 3, 4);
     }
 }
