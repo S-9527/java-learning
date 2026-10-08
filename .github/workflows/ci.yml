@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    # 依赖已缓存在 Gradle 的本地仓库里，CI 上会重新下载。
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 校验测试索引是最新的
+        # 如果有人改了测试或 @DisplayName 却没跑 generateDocIndex，这一步会失败。
+        run: |
+          ./gradlew generateDocIndex --console=plain
+          git diff --exit-code docs/GENERATED/TEST_INDEX.md || {
+            echo "::error::docs/GENERATED/TEST_INDEX.md 过期了，请跑 ./gradlew generateDocIndex 后提交"
+            exit 1
+          }
+
+      - name: 跑全部断言，并校验文档没有脱节
+        run: ./gradlew test --console=plain
