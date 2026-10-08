@@ -1,7 +1,8 @@
 package dev.javaquest.basics.variables;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.withPrecision;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -79,7 +80,7 @@ class VariableTest {
 
         assertThat(sum)
                 .as("正确的比较方式是给一个容差，而不是用 ==")
-                .isCloseTo(0.3, withPrecision(1e-9));
+                .isCloseTo(0.3, within(1e-9));
     }
 
     @Test
@@ -131,12 +132,60 @@ class VariableTest {
     @DisplayName("char 背后就是一个 16 位无符号整数")
     void charIsAnUnsignedNumber() {
         assertThat(VariableDemo.numericValueOfCharA())
-                .as("char 可以直接当 int 用，'A' 就是 65")
+                .as("(int) 'A' 得到 65。注意写成 (char) 'A' 什么都不会发生，那还是 'A'")
                 .isEqualTo(65);
 
         assertThat(VariableDemo.nextCharAfterA())
-                .as("字符能做算术，但结果类型是 int，塞回 char 必须显式转换")
+                .as("字符能做算术，但 'A' + 1 的结果类型是 int 66，塞回 char 必须显式转换")
                 .isEqualTo('B');
+
+        assertThat(VariableDemo.lowercaseMinusUppercase())
+                .as("'a' - 'A' 是 32")
+                .isEqualTo(32);
+
+        assertThat(VariableDemo.uppercaseMinusLowercase())
+                .as("反过来写就是 -32，差值相同但符号相反")
+                .isEqualTo(-32);
+
+        assertThat(VariableDemo.charMinimumValue())
+                .as("char 无符号，所以下限是 0（就是 '\\u0000'），而不是像 short 那样为负")
+                .isZero();
+
+        assertThat(VariableDemo.charMaximumValue())
+                .as("无符号 16 位能到 65535，比 short 的 32767 大一倍")
+                .isEqualTo(65_535);
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("负偶数取模是 0，这就是奇偶判断写错的根源")
+    void negativeEvenNumberModuloIsZero() {
+        assertThat(VariableDemo.moduloNegativeEven())
+                .as("-4 % 2 == 0，不是 1。所以判断偶数必须写 n % 2 == 0，写 == 1 会把负偶数误判掉")
+                .isZero();
+    }
+
+    @Test
+    @Order(15)
+    @DisplayName("溢出可以主动检测：Math.addExact 抛异常，转换成 long 则不溢出")
+    void overflowCanBeDetectedOrAvoided() {
+        assertThat(VariableDemo.addOneToMaxIntAsLong())
+                .as("先转 long 再加，得到 2147483648，不回绕")
+                .isEqualTo(2_147_483_648L);
+
+        assertThatThrownBy(() -> VariableDemo.addOneToMaxIntWithOverflowCheck())
+                .as("Math.addExact 在溢出时抛 ArithmeticException，而不是静默回绕")
+                .isInstanceOf(ArithmeticException.class)
+                .hasMessageContaining("overflow");
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("两个 new 出来的 String 内容相等，但 == 为 false")
+    void twoBuiltStringsAreContentEqualButNotIdentical() {
+        assertThat(VariableDemo.twoBuiltStringsHaveEqualContent())
+                .as("equals() 比内容，返回 true")
+                .isTrue();
     }
 
     @Test
