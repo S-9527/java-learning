@@ -288,7 +288,7 @@ public final class DocIndex {
                 sb.append("| ").append(n)
                         .append(" | `").append(t.simple()).append("`")
                         .append(" | `").append(t.method()).append("`")
-                        .append(" | ").append(t.displayName()).append(" |")
+                        .append(" | ").append(cell(t.displayName())).append(" |")
                         .append(t.disabled() ? " 练习答案" : "").append(" |\n");
             }
             sb.append("\n");
@@ -423,6 +423,17 @@ public final class DocIndex {
      */
     private static boolean covers(String declared, String cls) {
         return cls.equals(declared) || cls.startsWith(declared + ".");
+    }
+
+    /**
+     * markdown 表格单元格里的裸竖线必须转义。
+     *
+     * <p>{@code @DisplayName} 是人手写的，出现 {@code |} 很自然——比如
+     * 「非短路的 | 会让两边都执行」。不转义的话 Markdown 会把它当列分隔符，
+     * 整张表从那一行开始错位。
+     */
+    private static String cell(String text) {
+        return text.replace("|", "\\|");
     }
 
     private static boolean isDigits(String s) {

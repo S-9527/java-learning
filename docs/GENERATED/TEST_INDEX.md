@@ -18,8 +18,8 @@
 | 5 | `ControlFlowExercisesTest` | `exerciseWhyRemoveWhileIteratingFails` | 练习 5：为什么在增强 for 里删元素会抛 ConcurrentModificationException？ | 练习答案 |
 | 6 | `ControlFlowExercisesTest` | `exerciseRemoveOverloadPicksIndex` | 练习 6：[1,2,3,4].remove(2) 删掉的是哪个元素？ | 练习答案 |
 | 7 | `ControlFlowTest.Choosing` | `andSkipsTheRightSide` | && 左边为 false 时，右边不执行 | |
-| 8 | `ControlFlowTest.Choosing` | `orSkipsTheRightSide` | || 左边为 true 时，右边不执行 | |
-| 9 | `ControlFlowTest.Choosing` | `bitwiseOrAlwaysEvaluatesBothSides` | 非短路的 | 会让两边都执行，所以副作用会发生两次 | |
+| 8 | `ControlFlowTest.Choosing` | `orSkipsTheRightSide` | \|\| 左边为 true 时，右边不执行 | |
+| 9 | `ControlFlowTest.Choosing` | `bitwiseOrAlwaysEvaluatesBothSides` | 非短路的 \| 会让两边都执行，所以副作用会发生两次 | |
 | 10 | `ControlFlowTest.Choosing` | `classicSwitchFallsThroughWhenBreakIsMissing` | 传统 switch 漏写 break 会一路往下走 | |
 | 11 | `ControlFlowTest.Choosing` | `switchExpressionOnIntNeedsDefault` | switch 表达式处理 int 时必须写 default | |
 | 12 | `ControlFlowTest.Choosing` | `switchExpressionOnEnumIsExhaustive` | switch 表达式处理枚举时不需要 default | |
