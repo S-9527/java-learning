@@ -21,6 +21,10 @@ import org.junit.jupiter.api.TestMethodOrder;
  * {@link DocIndex#discover} 会跳过这个包。这是有意为之：
  * 校验机制本身不需要被校验机制校验，否则会无限套娃。
  *
+ * <p>两件事分开测，这样报错时能立刻分清是「文档写错了」还是「索引忘了重新生成」。
+ * 其余的校验规则（covers 声明、断言点名、类名存在、代码块路径、INDEX 顺序）
+ * 都在 {@link DocIndex#check} 里，第 1 条测试会一次性列出全部问题。
+ *
  * <p>跑法：{@code ./gradlew test}。想重新生成索引：{@code ./gradlew generateDocIndex}。
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -54,20 +58,4 @@ class DocumentationSyncTest {
                 + "期望内容前 400 字符：\n" + fresh.substring(0, Math.min(400, fresh.length()))).isEqualTo(fresh);
     }
 
-    @Test
-    @Order(3)
-    @DisplayName("示例代码文件都真实存在（文档里引用的路径不会指空）")
-    void referencedSourcesExist() throws IOException {
-        List<DocIndex.Doc> docs = DocIndex.readDocs(DocIndex.docsDir());
-        List<String> problems = new java.util.ArrayList<>();
-        for (DocIndex.Doc d : docs) {
-            for (String src : d.srcs()) {
-                if (!Files.isRegularFile(Path.of(src))) {
-                    problems.add(d.name() + " 指向了不存在的文件：" + src);
-                }
-            }
-        }
-        assertThat(problems).as(() -> "文档里的代码块标注了不存在的示例文件：\n" + String.join("\n", problems))
-                .isEmpty();
-    }
 }
