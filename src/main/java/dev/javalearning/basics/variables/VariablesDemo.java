@@ -11,6 +11,18 @@ import java.math.BigDecimal;
 public class VariablesDemo {
 
     public static void main(String[] args) {
+        section("0. 八种基本类型的取值范围");
+        System.out.printf("byte    %22d ~ %d%n", Byte.MIN_VALUE, Byte.MAX_VALUE);
+        System.out.printf("short   %22d ~ %d%n", Short.MIN_VALUE, Short.MAX_VALUE);
+        System.out.printf("char    %22d ~ %d%n", (int) Character.MIN_VALUE, (int) Character.MAX_VALUE);
+        System.out.printf("int     %22d ~ %d%n", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        System.out.printf("long    %22d ~ %d%n", Long.MIN_VALUE, Long.MAX_VALUE);
+        System.out.printf("float    %s ~ %s%n", -Float.MAX_VALUE, Float.MAX_VALUE);
+        System.out.printf("double   %s ~ %s%n", -Double.MAX_VALUE, Double.MAX_VALUE);
+        System.out.println("char 的边界是控制字符：MIN 是 U+"
+                + String.format("%04X", (int) Character.MIN_VALUE)
+                + "，MAX 是 U+" + String.format("%04X", (int) Character.MAX_VALUE));
+
         section("1. 整数：7 / 2 等于几");
         System.out.println("7 / 2    = " + divide7By2());
         System.out.println("7 / 2.0  = " + divide7By2Point0());
@@ -40,6 +52,31 @@ public class VariablesDemo {
         System.out.println("127 == 127 → " + smallIntegersAreCached());
         System.out.println("128 == 128 → " + bigIntegersAreNotCached());
         System.out.println("128 用 equals → " + bigIntegersAreEqualByContent());
+    }
+
+    // ── 0. 取值范围 ──────────────────────────────────────────────────
+
+    /** byte 能装的数字个数：2 的 8 次方。 */
+    public static int byteCapacity() {
+        return (int) ((long) Byte.MAX_VALUE - Byte.MIN_VALUE + 1);
+    }
+
+    /** int 能装的数字个数：2 的 32 次方，约 42.9 亿。 */
+    public static long intCapacity() {
+        return (long) Integer.MAX_VALUE - Integer.MIN_VALUE + 1;
+    }
+
+    /**
+     * Double.MIN_VALUE 不是「最小的负数」，而是「最小的正数」。
+     * 这是 JDK 里最容易误解的一个常量名。
+     */
+    public static boolean doubleMinValueIsPositive() {
+        return Double.MIN_VALUE > 0;
+    }
+
+    /** 想要负无穷，自己加负号。 */
+    public static double mostNegativeDouble() {
+        return -Double.MAX_VALUE;
     }
 
     // ── 1. 整数 ────────────────────────────────────────────────────

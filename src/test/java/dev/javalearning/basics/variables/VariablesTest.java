@@ -16,6 +16,53 @@ import org.junit.jupiter.api.Test;
  */
 class VariablesTest {
 
+    // ── 0. 取值范围 ──────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("byte 装得下 256 个不同的数（2^8）")
+    void byteHolds256Values() {
+        assertThat(VariablesDemo.byteCapacity()).isEqualTo(256);
+    }
+
+    @Test
+    @DisplayName("int 装得下约 42.9 亿个不同的数（2^32）")
+    void intHoldsAboutFourBillionValues() {
+        assertThat(VariablesDemo.intCapacity()).isEqualTo(4294967296L);
+    }
+
+    @Test
+    @DisplayName("相邻整数类型的容量按 2 的幂翻倍，不是线性增长")
+    void capacitiesGrowByPowersOfTwo() {
+        // byte 是 2^8，int 是 2^32，中间差 24 个二进制位，也就是 2^24 = 16777216 倍
+        assertThat(VariablesDemo.byteCapacity() * 16777216L)
+                .isEqualTo(VariablesDemo.intCapacity());
+        // short 是 2^16，正好夹在两者中间
+        assertThat((long) Short.MAX_VALUE - Short.MIN_VALUE + 1)
+                .isEqualTo(65536L);
+    }
+
+    @Test
+    @DisplayName("八种基本类型的边界值都取得到")
+    void everyPrimitiveHasItsBoundaries() {
+        assertThat(Byte.MIN_VALUE).isEqualTo((byte) -128);
+        assertThat(Byte.MAX_VALUE).isEqualTo((byte) 127);
+        assertThat(Short.MIN_VALUE).isEqualTo((short) -32768);
+        assertThat(Integer.MIN_VALUE).isEqualTo(-2147483648);
+        assertThat(Long.MIN_VALUE).isEqualTo(-9223372036854775808L);
+        assertThat((int) Character.MIN_VALUE).isZero();
+        assertThat((int) Character.MAX_VALUE).isEqualTo(65535);
+    }
+
+    @Test
+    @DisplayName("Double.MIN_VALUE 不是最小的负数，而是最小的正数——最容易看错的常量名")
+    void doubleMinValueIsPositiveNotNegative() {
+        assertThat(VariablesDemo.doubleMinValueIsPositive()).isTrue();
+        assertThat(Double.MIN_VALUE).isEqualTo(4.9e-324);
+        assertThat(VariablesDemo.mostNegativeDouble()).isEqualTo(-Double.MAX_VALUE);
+    }
+
+    // ── 1. 整数 ────────────────────────────────────────────────────
+
     @Test
     @DisplayName("整数除法丢掉余数，不四舍五入：7 / 2 是 3")
     void integerDivisionDropsTheRemainder() {
