@@ -1,76 +1,29 @@
-# java-quest
+# java-learning
 
-用**能跑的测试**当文档的 Java 学习仓库。
+从零开始学 Java 的公开笔记。`docs/` 下每一课都按「**先让代码疼一次，再给解法**」的顺序写，
+代码块后面紧跟真实的执行结果——读起来应该像看视频，而不是读 API 文档。
 
-不是「写完代码补文档」，而是**文档就是那些断言**——所以它永远不会过期，
-因为过期的文档会让测试变红。
+## 现在学到哪
 
-```
-docs/01-变量与类型.md          ← 讲解（散文，可以随便改）
-        ↑ DocIndex 校验
-src/test/.../VariableTest.java  ← 唯一真相：可运行、可验证、40 条断言
-        ↓ 被测
-src/main/.../VariableDemo.java  ← 示例代码，被讲解和被测试的对象
-```
+见 [docs/README.md](docs/README.md) 的路线图（共 19 课，从「程序是怎么跑起来的」到「并发集合」）。
 
-## 上手
+## 怎么跑代码
 
 ```bash
-./gradlew test                                  # 跑全部断言 + 校验文档没脱节
-./gradlew test --tests '*VariableTest'          # 只跑第一章
-./gradlew generateDocIndex                      # 测试有变动后重新生成索引，然后提交
+# 单文件直接跑，不需要构建（JDK 11+）
+java src/main/java/dev/javalearning/lesson00/Hello.java
+
+# 先编译再跑
+javac -encoding UTF-8 -d out src/main/java/dev/javalearning/lesson00/Hello.java
+java -cp out dev.javalearning.lesson00.Hello
+
+# 跑某一课的全部断言
+./gradlew test --tests '*lesson00*'
 ```
 
-在 IDE 里打开任一 `*Test.java`，左边的方法列表就是那一章的目录：
-方法名是英文（方便跳转和搜索），中文句子放在 `@DisplayName` 里。
+## 约定
 
-## 已写章节
-
-| 章节 | 内容 | 断言数 |
-|---|---|---|
-| [01 变量与类型](docs/01-变量与类型.md) | 一条主线：变量装的是值还是地址。整数算术、溢出、类型提升、浮点精度 / String 不可变、`==` 与 `equals`、`final`、自动装箱 | 22 |
-| [02 流程控制](docs/02-流程控制.md) | 选择/重复/跳转三块主线：短路求值、switch 穷尽匹配、三种循环、break/continue/标签、迭代中删元素 | 22 |
-| [03 方法](docs/03-方法.md) | 方法边界的三面：输入（参数是值的副本、可变参数、重载）、输出（return / void）、内部（局部作用域） | 14 |
-| [04 类与对象](docs/04-类与对象.md) | 类与实例、字段与方法、构造器与 `this`、`static` 成员的归属、可见性与封装 | 19 |
-| [05 继承与多态](docs/05-继承与多态.md) | 父类抽象、子类重写、向上/向下转型、模式匹配、抽象类与接口、`equals`/`hashCode` 契约 | 27 |
-
-[测试清单（自动生成）](docs/GENERATED/TEST_INDEX.md) ·
-[学习路线](docs/INDEX.md)
-
-## 「活文档」是怎么做到的
-
-每篇 md 顶部声明它对应哪些测试，正文用固定格式点名每一条断言：
-
-```markdown
-<!-- covers: VariableTest, VariableExercisesTest -->
-
-`VariableTest#integerDivisionDropsTheRemainder`
-```
-
-`DocumentationSyncTest` 每次跑 `test` 都检查六件事，任一不满足就红：
-
-| 检查 | 挡住了什么 |
-|---|---|
-| 每篇 md 必须有 `<!-- covers: ... -->` | 文档和测试互不认识 |
-| 被声明的测试类必须真实存在 | md 里贴了不存在的类名 |
-| 每个测试类都要有文档认领 | 写了测试但忘了讲 |
-| 每条断言都要在正文被点名 | 漏了一条测试没写进文档 |
-| md 里点的每个名号必须存在 | 改方法名后文档变成空指针 |
-| `docs/GENERATED/TEST_INDEX.md` 必须是最新 | 索引过期 |
-
-`build.gradle.kts` 里把 `docs/` 声明成了 `test` 任务的输入目录，
-所以改了 markdown 之后 `test` 一定会重跑——否则看门人自己就失效了。
-
-## 练习题
-
-每章 3-4 道，答案写成 `@Disabled` 的测试放在 `*ExercisesTest.java`。
-删掉方法上的 `@Disabled` 就能跑，答案写在注解的原因里。
-
-## 环境
-
-JDK 25 · Gradle 9.8 · JUnit 6.1.3 · AssertJ 3.27.7。依赖已在本机缓存，可离线构建。
-
-## 后面还想写
-
-继承与多态、record 与 enum、异常、集合、字符串、Lambda 与 Stream、并发。
-想加哪一章就开 issue，照现有四章的结构写就行——校验会告诉你有没有漏。
+- 一课一个包：`src/main/java/dev/javalearning/lessonNN/`，要验证的东西写成 `src/test/` 下的断言
+- 方法名用英文，`@DisplayName` 用中文
+- `docs/` 讲完一课才建一个文件，不留空占位
+- 代码块后面的「执行结果」都是真跑出来的，不是编的

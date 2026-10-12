@@ -1,1 +1,1 @@
-rootProject.name = "java-quest"
+rootProject.name = "java-learning"

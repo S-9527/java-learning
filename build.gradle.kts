@@ -2,7 +2,7 @@ plugins {
     `java-library`
 }
 
-group = "dev.javaquest"
+group = "dev.javalearning"
 version = "0.1.0"
 
 repositories {
@@ -28,31 +28,14 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
 
-// 重新生成 docs/GENERATED/TEST_INDEX.md。
-// 加了新测试、改了 @DisplayName 或 @Order 之后必须跑一次，然后提交产物。
-tasks.register<JavaExec>("generateDocIndex") {
-    group = "documentation"
-    description = "扫描测试类，重新生成 docs/GENERATED/TEST_INDEX.md"
-    dependsOn("compileTestJava")
-    workingDir = rootDir
-    classpath = sourceSets.test.get().runtimeClasspath
-    mainClass.set("dev.javaquest.meta.GenerateDocIndex")
-    jvmArgs("-Dfile.encoding=UTF-8")
-}
-
 tasks.test {
     useJUnitPlatform()
 
-    // 关键：DocumentationSyncTest 读 docs/ 下的 markdown，但 Gradle 默认不知道这件事，
-    // 于是改了 .md 之后 test 会被判定为「输入没变」而跳过运行——
-    // 活文档的看门人就失效了。这里把 docs/ 声明成 test 的输入目录。
-    inputs.dir(layout.projectDirectory.dir("docs"))
-        .withPropertyName("docs")
-        .withPathSensitivity(PathSensitivity.RELATIVE)
-    jvmArgs("-Dfile.encoding=UTF-8", "-Duser.language=zh", "-Duser.country=CN")
+    // 每一条断言都打印出来。学习仓库里「看见它真的跑过」比构建速度重要。
     testLogging {
         events("passed", "failed", "skipped")
         showStandardStreams = true
         setExceptionFormat("full")
     }
+    jvmArgs("-Dfile.encoding=UTF-8", "-Duser.language=zh", "-Duser.country=CN")
 }
