@@ -57,3 +57,15 @@
 src/main/java/dev/javalearning/lessonNN/    一课一个包
 src/test/java/dev/javalearning/lessonNN/    要验证的东西写成断言
 ```
+
+## 写笔记的几条约定
+
+- **凡是提到仓库里的文件，一律写成相对链接**，读者点一下就能跳过去看源码。
+  链接文本只写**文件名**，路径丢进 href 里，别把一长串路径摊在正文里：
+
+  ```markdown
+  这个文件在 [`Hello.java`](../src/main/java/dev/javalearning/lesson00/Hello.java)
+  ```
+- 代码块后面的「执行结果」必须**真跑出来再贴**，不许凭记忆写
+- 终端会话用 ` ```terminal ` 代码块，命令行以 `$` 开头，输出原样贴
+- `Mismatch.java` 这种「故意写错的反面教材」要排除出 `build.gradle.kts`，并在文档里说明它标红是正常的
