@@ -51,11 +51,45 @@
 ## 五、术语表 + 下期再见
 ```
 
-## 代码结构
+## 代码结构：按主题分包，不按课时分包
+
+代码**按知识点组织**，不按课时——这样复习时能直接找到主题，不用去翻是第几课。
+学习顺序由本路线图和 `docs/` 的文件名（`00-`、`01-`…）保证，两件事互不干扰。
 
 ```
-src/main/java/dev/javalearning/lessonNN/    一课一个包
-src/test/java/dev/javalearning/lessonNN/    要验证的东西写成断言
+src/main/java/dev/javalearning/
+├── intro/                    第 00 课：程序是怎么跑起来的
+├── basics/
+│   ├── variables/            第 01 课：变量与类型
+│   ├── controlflow/          第 02 课：运算符与流程控制
+│   ├── methods/              第 03 课：方法
+│   ├── classes/              第 04 课：类与对象
+│   └── inheritance/          第 05 课：继承与多态
+├── generics/                 第 06 课：泛型
+├── lambda/                   第 07 课：Lambda
+├── optional/                 第 08 课：Optional
+├── reflection/               第 09 课：反射
+├── stream/                   第 10 ~ 11 课：Stream 与并行流
+└── concurrency/              第 12 ~ 18 课：多线程全家桶
+
+src/test/java/dev/javalearning/   ← 与 main 的包结构严格一一对应（Java 硬规范）
+└── basics/variables/VariablesTest.java
+```
+
+**测试包必须和被测试的类在同一个包名下**，不能另起炉灶。这样 `package-private`
+的成员也能被测到，而且看一眼包路径就知道这段测试测的是谁。
+
+已建好的对应关系：
+
+| 课 | 主题包 |
+|---|---|
+| [00](00-程序是怎么跑起来的.md) | `dev.javalearning.intro` |
+| [01](01-变量与类型.md) | `dev.javalearning.basics.variables` |
+
+跑某一课：
+
+```bash
+./gradlew test --tests '*variables*'
 ```
 
 ## 写笔记的几条约定
@@ -64,7 +98,7 @@ src/test/java/dev/javalearning/lessonNN/    要验证的东西写成断言
   链接文本只写**文件名**，路径丢进 href 里，别把一长串路径摊在正文里：
 
   ```markdown
-  这个文件在 [`Hello.java`](../src/main/java/dev/javalearning/lesson00/Hello.java)
+  这个文件在 [`Hello.java`](../src/main/java/dev/javalearning/intro/Hello.java)
   ```
 - 代码块后面的「执行结果」必须**真跑出来再贴**，不许凭记忆写
 - 终端会话用 ` ```terminal ` 代码块，命令行以 `$` 开头，输出原样贴

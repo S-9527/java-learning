@@ -1,4 +1,4 @@
-package dev.javalearning.lesson01;
+package dev.javalearning.basics.variables;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * 第 01 课的断言。
  *
  * <p>每一条对应 {@code docs/01-变量与类型.md} 里的一节。
- * 跑法：{@code ./gradlew test --tests '*lesson01*'}
+ * 跑法：{@code ./gradlew test --tests '*variables*'}
  */
 class VariablesTest {
 

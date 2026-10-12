@@ -1,4 +1,4 @@
-package dev.javalearning.lesson01.broken;
+package dev.javalearning.basics.variables.broken;
 
 /**
  * 第 01 课的反面教材：两个 byte 相加。

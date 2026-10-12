@@ -1,4 +1,4 @@
-package dev.javalearning.lesson00;
+package dev.javalearning.intro;
 
 /**
  * 第 00 课的第一个程序。

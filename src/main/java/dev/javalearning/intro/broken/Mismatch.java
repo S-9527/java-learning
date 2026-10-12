@@ -1,3 +1,4 @@
+package dev.javalearning.intro.broken;
 /**
  * 第 00 课的「反面教材」。
  *

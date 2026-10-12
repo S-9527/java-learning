@@ -1,11 +1,11 @@
-package dev.javalearning.lesson01;
+package dev.javalearning.basics.variables;
 
 import java.math.BigDecimal;
 
 /**
  * 第 01 课的示例代码：一个变量里到底装着什么。
  *
- * <p>直接跑：{@code java src/main/java/dev/javalearning/lesson01/VariablesDemo.java}
+ * <p>直接跑：{@code java src/main/java/dev/javalearning/basics/variables/VariablesDemo.java}
  * 每一节对应 {@code docs/01-变量与类型.md} 里的一节，输出都是真跑出来的。
  */
 public class VariablesDemo {

@@ -11,19 +11,24 @@
 
 ```bash
 # 单文件直接跑，不需要构建（JDK 11+）
-java src/main/java/dev/javalearning/lesson00/Hello.java
+java src/main/java/dev/javalearning/intro/Hello.java
+java src/main/java/dev/javalearning/basics/variables/VariablesDemo.java
 
 # 先编译再跑
-javac -encoding UTF-8 -d out src/main/java/dev/javalearning/lesson00/Hello.java
-java -cp out dev.javalearning.lesson00.Hello
+javac -encoding UTF-8 -d out src/main/java/dev/javalearning/intro/Hello.java
+java -cp out dev.javalearning.intro.Hello
 
-# 跑某一课的全部断言
-./gradlew test --tests '*lesson00*'
+# 跑某一课的断言
+./gradlew test --tests '*variables*'
 ```
 
 ## 约定
 
-- 一课一个包：`src/main/java/dev/javalearning/lessonNN/`，要验证的东西写成 `src/test/` 下的断言
+- 代码**按主题分包**（`basics/variables`、`optional`、`concurrency/pool`…），不按课时；
+  学习顺序看 [`docs/README.md`](docs/README.md)
+- 测试包与被测类**严格同包**，不另起炉灶
+- 一课一个主题包，要验证的东西写成 `src/test/` 下的断言
 - 方法名用英文，`@DisplayName` 用中文
 - `docs/` 讲完一课才建一个文件，不留空占位
+- 故意写错的反面教材放该主题包的 `broken/` 子包里，已被构建排除，标红是正常的
 - 代码块后面的「执行结果」都是真跑出来的，不是编的
