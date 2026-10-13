@@ -49,8 +49,17 @@ def main() -> int:
     planned = planned_lessons()
     bad, future, checked = [], [], 0
 
-    for md in sorted(DOCS.glob("*.md")):
+    # 除了 docs/ 下的课，根目录的 README.md 也要查——它是仓库入口，
+    # 里面全是指向 docs/ 和 src/ 的链接，坏了影响最大。
+    files_to_check = sorted(DOCS.glob("*.md"))
+    root_readme = ROOT / "README.md"
+    if root_readme.exists():
+        files_to_check.append(root_readme)
+
+    for md in files_to_check:
         text = md.read_text(encoding="utf-8")
+        # 用相对仓库根的路径显示，方便定位
+        label = md.name if md.parent == DOCS else md.relative_to(ROOT).as_posix()
         for i, line in enumerate(text.splitlines(), 1):
             for m in LINK.finditer(line):
                 target = m.group(1).split("#", 1)[0]
@@ -61,11 +70,11 @@ def main() -> int:
                 if resolved.exists():
                     continue
                 # 目标不存在：看它是不是路线图里规划好的未来课
-                num = re.match(r"\./?(\d\d)-", target)
+                num = re.match(r"\.*/?(\d\d)-", target)
                 if num and num.group(1) in planned:
-                    future.append(f"{md.name}:{i}  ->  {target}")
+                    future.append(f"{label}:{i}  ->  {target}")
                 else:
-                    bad.append(f"{md.name}:{i}  ->  {target}")
+                    bad.append(f"{label}:{i}  ->  {target}")
 
     for f in future:
         print("未来课程的链接（写出来自动生效）:", f)
