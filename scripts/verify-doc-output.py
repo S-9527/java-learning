@@ -27,6 +27,7 @@ TARGETS = {
     "07-Lambda表达式.md": "lambda/LambdaDemo.java",
     "08-Optional.md": "optional/OptionalDemo.java",
     "09-反射.md": "reflection/ReflectionDemo.java",
+    "10-Stream.md": "stream/StreamDemo.java",
     "12-多线程基础.md": "concurrency/threads/ThreadsDemo.java",
     "14-JMM与volatile.md": "concurrency/jmm/JmmDemo.java",
     "15-锁.md": "concurrency/locks/LocksDemo.java",
@@ -57,8 +58,12 @@ for doc_name, rel in sorted(TARGETS.items()):
     if not src.exists():
         print(f"!! 源文件不存在: {rel}  (文档 {doc_name})"); fail += 1; continue
 
-    real = subprocess.run(["java", str(src.relative_to(ROOT))],
-                          capture_output=True, text=True, cwd=ROOT, timeout=240).stdout.strip()
+    # 注意：单文件源码模式下，javac 的警告走 stderr，程序的输出走 stdout。
+    # 文档里两者经常贴在一起（比如 StopIsGoneDemo 的 [removal] 警告），
+    # 所以这里把 stderr 也拼进来——顺序上 stderr 在前，和终端里看到的一致。
+    proc = subprocess.run(["java", str(src.relative_to(ROOT))],
+                          capture_output=True, text=True, cwd=ROOT, timeout=240)
+    real = (proc.stderr + proc.stdout).strip()
     text = doc.read_text(encoding="utf-8")
     cmd = f"$ java src/main/java/dev/javalearning/{rel}"
     m = re.search(r"```terminal\n" + re.escape(cmd) + r"\n(.*?)```", text, re.S)
