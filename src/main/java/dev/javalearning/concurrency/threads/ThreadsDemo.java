@@ -74,8 +74,9 @@ public class ThreadsDemo {
         System.out.println("并发 Concurrency：同一时间段内处理多个任务，靠调度快速切换");
         System.out.println("                  单核也能并发 —— 逻辑上同时，物理上轮流");
         System.out.println("并行 Parallelism：同一时刻真的在跑，需要多核");
-        System.out.println("本机可用核心数 = " + Runtime.getRuntime().availableProcessors()
-                + "（这个数取决于你的机器）");
+        System.out.println("你机器有几个核，决定了「并发」能不能变成真的「并行」");
+        System.out.println("（Runtime.getRuntime().availableProcessors() 能查到，"
+                + "这个数随机器变，本课不打印它）");
         System.out.println();
         System.out.println("-- 两个任务在同一段时间里交替推进");
         // 等 A 真的开跑了再启动 B，纯粹为了让输出顺序每次都一样
@@ -105,7 +106,7 @@ public class ThreadsDemo {
     private static void mainThread() throws InterruptedException {
         Thread main = Thread.currentThread();
         System.out.println("执行 main 的线程：" + main.getName());
-        System.out.println("它的线程 id = " + main.threadId() + "（JVM 内部编号，换台机器可能是别的数）");
+        System.out.println("（还有个 threadId()，是个 JVM 内部编号，随机器变，这里不打印）");
 
         // 改名字只影响显示（日志、jstack、调试器），对行为没有任何影响
         Thread worker = new Thread(
