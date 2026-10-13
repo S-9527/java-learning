@@ -19,5 +19,10 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: 校验 docs 里的相对链接没有坏链
+        # 不解析锚点（我们不锚小节），只查文件在不在。
+        # 指向还没写的课的链接只警告，等课写出来自动生效。
+        run: python3 scripts/check-links.py
+
       - name: 跑全部断言
         run: ./gradlew test --console=plain

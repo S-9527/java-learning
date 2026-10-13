@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""
+校验 docs/ 下所有 markdown 的相对链接。
+
+只检查「文件是否存在」，不解析锚点——我们不锚到具体小节，
+所以任何渲染器（GitHub、VS Code、typora、纯文本）看到的行为都一致。
+
+校验这些形式的链接：
+  ./NN-xxx.md          → docs/ 之间的互相引用
+  ../src/...           → 指向仓库里的代码文件
+  ../build.gradle.kts  → 指向仓库根的文件
+
+指向未来课程的链接只警告、不算失败：课一写出来，链接自动生效，零维护。
+判断依据是 docs/README.md 路线图里规划了哪些课。
+
+用法：./scripts/check-links.py
+退出码：0 = 没有坏链；1 = 有坏链
+"""
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+DOCS = ROOT / "docs"
+ROADMAP = DOCS / "README.md"
+
+# 匹配 [text](target) 里的 target，忽略 http(s)、mailto、纯锚点 #
+LINK = re.compile(r"\]\((?!https?:|mailto:|#)([^)\s]+)\)")
+
+
+def planned_lessons() -> set:
+    """路线图里规划了哪些课——这些课的链接即使还没写也允许存在。
+
+    路线图里出现的形式有三种，都要认：
+      | 05 | 继承与多态 | ...      ← 章节表格
+      │   └── inheritance/  第 05 课：...   ← 目录树
+      ｜ [05](05-xxx.md) ✅ | ...  ← 已完成的章节
+    """
+    if not ROADMAP.exists():
+        return set()
+    text = ROADMAP.read_text(encoding="utf-8")
+    planned = set(re.findall(r"\|\s*(\d\d)\s*\|", text))
+    planned |= set(re.findall(r"第\s*(\d\d)\s*课", text))
+    planned |= set(re.findall(r"\((\d\d)-[\w]", text))
+    return planned
+
+
+def main() -> int:
+    planned = planned_lessons()
+    bad, future, checked = [], [], 0
+
+    for md in sorted(DOCS.glob("*.md")):
+        text = md.read_text(encoding="utf-8")
+        for i, line in enumerate(text.splitlines(), 1):
+            for m in LINK.finditer(line):
+                target = m.group(1).split("#", 1)[0]
+                if not target:
+                    continue
+                resolved = (md.parent / target).resolve()
+                checked += 1
+                if resolved.exists():
+                    continue
+                # 目标不存在：看它是不是路线图里规划好的未来课
+                num = re.match(r"\./?(\d\d)-", target)
+                if num and num.group(1) in planned:
+                    future.append(f"{md.name}:{i}  ->  {target}")
+                else:
+                    bad.append(f"{md.name}:{i}  ->  {target}")
+
+    for f in future:
+        print("未来课程的链接（写出来自动生效）:", f)
+    for b in bad:
+        print("坏链:", b)
+    print(
+        f"\n检查了 {checked} 个链接：坏链 {len(bad)} 个，"
+        f"指向未来课程 {len(future)} 个"
+    )
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
