@@ -95,12 +95,33 @@ def main() -> int:
     for n in dangling:
         print(f"路线图虚标: {n} 标了 ✅ 但 docs/ 里没有对应文档")
 
+    # 再查一件：文档头部声称的断言条数，和测试文件里真实的 @Test 数量是否对得上。
+    # 这类不一致很隐蔽——改了测试忘了回去改文档头部，读者会以为漏了几条。
+    count_mismatch = []
+    for md in sorted(DOCS.glob("[0-9][0-9]-*.md")):
+        text = md.read_text(encoding="utf-8")
+        m = re.search(r"断言：\[`(\w+Test)\.java`\][^）]*（(\d+) 条）", text)
+        if not m:
+            continue
+        test_cls, claimed = m.group(1), int(m.group(2))
+        # 在 src/test 下找这个测试类
+        matches = list((ROOT / "src/test").rglob(f"{test_cls}.java"))
+        if not matches:
+            count_mismatch.append(f"{md.name}: 文档声称 {claimed} 条，但找不到 {test_cls}.java")
+            continue
+        real = len(re.findall(r"^\s*@Test\b", matches[0].read_text(encoding="utf-8"), re.M))
+        if real != claimed:
+            count_mismatch.append(f"{md.name}: 文档写 {claimed} 条，实际 {real} 条")
+    for c in count_mismatch:
+        print("断言条数不符:", c)
+
     print(
         f"\n检查了 {checked} 个链接：坏链 {len(bad)} 个，"
         f"指向未来课程 {len(future)} 个；"
-        f"路线图漏打勾 {len(unchecked)} 个，虚标 {len(dangling)} 个"
+        f"路线图漏打勾 {len(unchecked)} 个，虚标 {len(dangling)} 个；"
+        f"断言条数不符 {len(count_mismatch)} 个"
     )
-    return 1 if bad or unchecked or dangling else 0
+    return 1 if bad or unchecked or dangling or count_mismatch else 0
 
 
 if __name__ == "__main__":
