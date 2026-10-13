@@ -39,7 +39,7 @@
 | 15 | 锁 | synchronized 细节、ReentrantLock、死锁 |
 | [16](16-线程通信.md) ✅ | 线程通信 | wait/notify；为什么必须用 while 包住 wait |
 | [17](17-线程池.md) ✅ | 线程池 | 七个参数；为什么不用 Executors；execute 与 submit |
-| 18 | 并发集合与 ThreadLocal | ConcurrentHashMap、内存泄漏 |
+| [18](18-并发集合与ThreadLocal.md) ✅ | 并发集合与 ThreadLocal | ConcurrentHashMap、check-then-act、ThreadLocal 内存泄漏 |
 
 ## 每一课的写法
 
