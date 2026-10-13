@@ -71,11 +71,27 @@ def main() -> int:
         print("未来课程的链接（写出来自动生效）:", f)
     for b in bad:
         print("坏链:", b)
+
+    # 顺带查一件容易漏的事：路线图的 ✅ 和 docs/ 里实际有哪些文件是否对得上。
+    # 新课写完了忘了打勾，或者打了勾却没写文档，这里都能抓到。
+    actual = sorted(
+        p.name[:2] for p in DOCS.glob("*.md") if re.match(r"\d\d-", p.name)
+    )
+    roadmap_text = ROADMAP.read_text(encoding="utf-8") if ROADMAP.exists() else ""
+    checked_marks = sorted(set(re.findall(r"^\| \[(\d\d)\]", roadmap_text, re.M)))
+    unchecked = [n for n in actual if n not in checked_marks]
+    dangling = [n for n in checked_marks if n not in actual]
+    for n in unchecked:
+        print(f"路线图漏打勾: {n} 有文档但 README 里没标 ✅")
+    for n in dangling:
+        print(f"路线图虚标: {n} 标了 ✅ 但 docs/ 里没有对应文档")
+
     print(
         f"\n检查了 {checked} 个链接：坏链 {len(bad)} 个，"
-        f"指向未来课程 {len(future)} 个"
+        f"指向未来课程 {len(future)} 个；"
+        f"路线图漏打勾 {len(unchecked)} 个，虚标 {len(dangling)} 个"
     )
-    return 1 if bad else 0
+    return 1 if bad or unchecked or dangling else 0
 
 
 if __name__ == "__main__":

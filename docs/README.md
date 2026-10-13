@@ -23,7 +23,7 @@
 | 课 | 主题 | 解决的困惑 |
 |---|---|---|
 | [06](06-泛型.md) ✅ | 泛型 | 一个类处理所有类型；类型错误为什么能提前到编译期 |
-| 07 | Lambda | 不用为了发一条消息特意建一个类 |
+| [07](07-Lambda表达式.md) ✅ | Lambda | 不用为了发一条消息特意建一个类 |
 | [08](08-Optional.md) ✅ | Optional | 让 `null` 在类型上就看出来，而不是运行时才炸 |
 | [09](09-反射.md) ✅ | 反射 | 运行时才知道类名，怎么创建对象、调方法 |
 | 10 | Stream | 用声明式取代 for 循环 |
@@ -35,8 +35,8 @@
 | 11 | 并行流 | 第一次写多线程：为什么结果是乱序的 |
 | 12 | 多线程基础 | 线程创建、生命周期、守护线程、中断 |
 | 13 | 线程安全与同步 | 为什么加了锁就对了 |
-| 14 | JMM 与 volatile | 为什么改了值对方看不见 |
-| 15 | 锁 | synchronized 细节、ReentrantLock、死锁 |
+| [14](14-JMM与volatile.md) ✅ | JMM 与 volatile | 为什么改了值对方看不见 |
+| [15](15-锁.md) ✅ | 锁 | synchronized 细节、ReentrantLock、死锁 |
 | [16](16-线程通信.md) ✅ | 线程通信 | wait/notify；为什么必须用 while 包住 wait |
 | [17](17-线程池.md) ✅ | 线程池 | 七个参数；为什么不用 Executors；execute 与 submit |
 | [18](18-并发集合与ThreadLocal.md) ✅ | 并发集合与 ThreadLocal | ConcurrentHashMap、check-then-act、ThreadLocal 内存泄漏 |
