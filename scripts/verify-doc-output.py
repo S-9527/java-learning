@@ -29,6 +29,7 @@ TARGETS = {
     "09-反射.md": "reflection/ReflectionDemo.java",
     "10-Stream.md": "stream/StreamDemo.java",
     "12-多线程基础.md": "concurrency/threads/ThreadsDemo.java",
+    "11-并行流.md": "stream/ParallelStreamDemo.java",
     "14-JMM与volatile.md": "concurrency/jmm/JmmDemo.java",
     "15-锁.md": "concurrency/locks/LocksDemo.java",
     "16-线程通信.md": "concurrency/coordination/CoordinationDemo.java",
