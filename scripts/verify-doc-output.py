@@ -30,6 +30,7 @@ TARGETS = {
     "10-Stream.md": "stream/StreamDemo.java",
     "12-多线程基础.md": "concurrency/threads/ThreadsDemo.java",
     "11-并行流.md": "stream/ParallelStreamDemo.java",
+    "13-线程安全与同步.md": "concurrency/safety/SafetyDemo.java",
     "14-JMM与volatile.md": "concurrency/jmm/JmmDemo.java",
     "15-锁.md": "concurrency/locks/LocksDemo.java",
     "16-线程通信.md": "concurrency/coordination/CoordinationDemo.java",
