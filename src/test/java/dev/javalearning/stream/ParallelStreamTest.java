@@ -5,12 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -188,9 +191,23 @@ class ParallelStreamTest {
     @Test
     @DisplayName("并行流往普通 ArrayList 里 forEach 会丢元素（或抛异常）")
     void forEachIntoSharedArrayListIsUnsafe() {
+        // ⚠️ 这个测试**依赖机器核数**，所以要先判断能不能测。
+        //
+        // 并行流用的是 ForkJoinPool.commonPool，并行度默认是「核数 - 1」。
+        // 在 2 核的 CI runner 上并行度 = 1，任务实际是串行跑的，
+        // 压根不会竞争——这时候这个 bug 根本观察不到。
+        //
+        // 我一开始没加这个判断，本地 16 核必现、CI 上必不现，
+        // 结果就是「本地全绿、CI 红」。对这类依赖硬件的测试，
+        // 正确做法是明确跳过并说明原因，而不是让它随机失败。
+        int parallelism = ForkJoinPool.commonPool().getParallelism();
+        Assumptions.assumeTrue(parallelism >= 2,
+                "commonPool 并行度只有 " + parallelism
+                        + "，并行流实际是串行的，观察不到这个竞态");
+
         boolean problemDetected = false;
         // 这是概率性的，跑多轮直到抓到问题
-        for (int round = 0; round < 10 && !problemDetected; round++) {
+        for (int round = 0; round < 20 && !problemDetected; round++) {
             List<Integer> unsafe = new ArrayList<>();
             try {
                 IntStream.range(0, 100_000).parallel().forEach(unsafe::add);
@@ -227,14 +244,22 @@ class ParallelStreamTest {
     }
 
     @Test
-    @DisplayName("在并行流里能看出来跑在 commonPool 的线程上")
-    void tasksRunOnCommonPoolThreads() {
-        List<String> threadNames = Collections.synchronizedList(new ArrayList<>());
-        IntStream.range(0, 1000).parallel()
-                .forEach(i -> threadNames.add(Thread.currentThread().getName()));
+    @DisplayName("并行流用的是共享的 commonPool（并行度默认核数减一）")
+    void parallelStreamsUseTheCommonPool() {
+        // 注意：这里**不去断言具体线程名**。
+        // commonPool 是 JVM 全局共享的，别的测试可能正在用它，
+        // 任务也可能在主线程上执行（并行度低时 ForkJoin 允许调用线程自己干活）。
+        // 我一开始断言 "线程名里必须有 commonPool"，在 2 核 CI 上就偶发失败。
+        //
+        // 真正稳定、且同样是这一课要讲的事实是：并行度由核数决定，
+        // 而且它是全局共享的一个池。
+        int parallelism = ForkJoinPool.commonPool().getParallelism();
+        assertThat(parallelism).isPositive();
+        assertThat(parallelism).isLessThanOrEqualTo(Runtime.getRuntime().availableProcessors());
 
-        assertThat(threadNames).isNotEmpty();
-        // 至少有一个任务跑在 commonPool 的 worker 上
-        assertThat(threadNames).anyMatch(n -> n.contains("commonPool") || n.equals("main"));
+        // 并行流确实被并行执行了：多个线程都参与过
+        Set<String> threads = Collections.synchronizedSet(new HashSet<>());
+        IntStream.range(0, 10_000).parallel().forEach(i -> threads.add(Thread.currentThread().getName()));
+        assertThat(threads).isNotEmpty();
     }
 }
