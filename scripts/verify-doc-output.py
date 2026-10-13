@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """把每一课文档里的主 demo 输出块，和真实运行结果逐字比对。
 
-用法：python3 scripts/verify-doc-output.py
+用法：
+  python3 scripts/verify-doc-output.py                 # 全部（含不稳定的）
+  python3 scripts/verify-doc-output.py --stable-only   # CI 用，跳过不稳定的
 
 这是这个仓库最硬的一条规矩的执行者：文档里贴的执行结果必须是真的。
 每写一课就跑一遍，防止「改了 demo 忘了回去改文档」。
@@ -25,6 +27,7 @@ TARGETS = {
     "07-Lambda表达式.md": "lambda/LambdaDemo.java",
     "08-Optional.md": "optional/OptionalDemo.java",
     "09-反射.md": "reflection/ReflectionDemo.java",
+    "12-多线程基础.md": "concurrency/threads/ThreadsDemo.java",
     "14-JMM与volatile.md": "concurrency/jmm/JmmDemo.java",
     "15-锁.md": "concurrency/locks/LocksDemo.java",
     "16-线程通信.md": "concurrency/coordination/CoordinationDemo.java",
@@ -32,8 +35,19 @@ TARGETS = {
     "18-并发集合与ThreadLocal.md": "concurrency/collections/CollectionsDemo.java",
 }
 
+# 输出天生不稳定的课：并行流、竞态演示。它们的文档里已经明确说明了
+# 「每次运行可能不同」，所以 CI 里跳过，别让它们随机变红。
+UNSTABLE = {
+    "11-并行流.md",
+    "13-线程安全与同步.md",
+}
+
+STABLE_ONLY = "--stable-only" in sys.argv
+
 ok, fail, skip = 0, 0, 0
 for doc_name, rel in sorted(TARGETS.items()):
+    if STABLE_ONLY and doc_name in UNSTABLE:
+        print(f"跳过（输出天生不稳定）: {doc_name}"); skip += 1; continue
     doc = DOCS / doc_name
     if not doc.exists():
         print(f"跳过（文档不存在）: {doc_name}"); skip += 1; continue

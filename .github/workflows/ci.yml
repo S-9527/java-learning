@@ -22,7 +22,15 @@ jobs:
       - name: 校验 docs 里的相对链接没有坏链
         # 不解析锚点（我们不锚小节），只查文件在不在。
         # 指向还没写的课的链接只警告，等课写出来自动生效。
+        # 顺带查路线图的 ✅ 和 docs/ 里实际有哪些文件是否对得上。
         run: python3 scripts/check-links.py
+
+      - name: 校验文档里贴的执行结果和真实运行一致
+        # 这是这个仓库最硬的一条规矩：文档里的输出必须真跑出来。
+        # 改了 demo 忘了回去改文档，这一步会红。
+        # 用 --stable-only：并行流和竞态演示的输出天生不稳定，
+        # 它们的文档里已注明「每次可能不同」，不放进 CI 免得随机变红。
+        run: python3 scripts/verify-doc-output.py --stable-only
 
       - name: 跑全部断言
         run: ./gradlew test --console=plain
