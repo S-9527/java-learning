@@ -489,7 +489,7 @@ src/main/java/dev/javalearning/lambda/broken/TwoAbstractMethods.java:17: error: 
 `Unexpected @FunctionalInterface annotation`——"这个注解不该在这儿"。
 翻译过来就是：**"你说它是函数式接口，可它不是。"**
 
-这和第 04 课的 `@Override` 是同一个思路：**注解不改变行为，只让编译器帮你盯着一件容易忘的事。**
+这和 [继承与多态](./05-继承与多态.md)里那个 `@Override` 是同一个思路：**注解不改变行为，只让编译器帮你盯着一件容易忘的事。**
 
 ---
 
@@ -772,7 +772,7 @@ src/main/java/dev/javalearning/lambda/broken/IncomparableThis.java:29: error: in
 
 - **别给 lambda 硬凑一个接口名。** 如果只是"传个判断条件"，
   用现成的 `Predicate` 就行，不用为它新建一个 `MyChecker` 接口——
-  第 06 课讲泛型时说过的"别为每个类型抄一份"，这里是同一个道理
+  [泛型](./06-泛型.md)那一课讲过的"别为每个类型抄一份"，这里是同一个道理
 - **别在 lambda 里写超过三行的逻辑。** lambda 的好处是"一眼看懂它想干什么"。
   超过三行就该抽成一个有名字的方法，然后在 lambda 里**方法引用**它。
   这既解决了可读性，也让那段逻辑能单独测试
