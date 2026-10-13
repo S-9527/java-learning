@@ -27,9 +27,10 @@ $ java src/main/java/dev/javalearning/concurrency/jmm/JmmDemo.java
   等了 3 秒，counter 还活着吗 → false
 
 ========== 3. volatile 不保证原子性：两个线程各加 100 万 ==========
-  期望 2000000（两个线程各加 100 万）
-  10 轮里有任何一轮达到期望吗 → false
+  两个线程各加 100 万，期望 2000000
+  观测到「加少了」吗 → true
   ← 加了 volatile 依然丢更新，因为它只管可见性不管原子性
+  ← 某一轮恰好没丢是可能的（两个线程凑巧串行了），所以这里循环到出现为止
 
 ========== 4. 锁规则：synchronized 也能保证可见性 ==========
   writer 在锁里写了 lockedValue = 42（它不是 volatile）
@@ -197,9 +198,10 @@ static volatile boolean running = true;
 
 ```terminal
 ========== 3. volatile 不保证原子性：两个线程各加 100 万 ==========
-  期望 2000000（两个线程各加 100 万）
-  10 轮里有任何一轮达到期望吗 → false
+  两个线程各加 100 万，期望 2000000
+  观测到「加少了」吗 → true
   ← 加了 volatile 依然丢更新，因为它只管可见性不管原子性
+  ← 某一轮恰好没丢是可能的（两个线程凑巧串行了），所以这里循环到出现为止
 ```
 
 `volatile int count; count++;` **照样是错的**。因为 `count++` 还是"读-改-写"三步，

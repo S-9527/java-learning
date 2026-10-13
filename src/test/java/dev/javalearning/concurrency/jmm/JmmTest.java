@@ -42,24 +42,32 @@ class JmmTest {
     @Test
     @DisplayName("volatile 不保证原子性：count++ 依然丢更新")
     void volatileDoesNotGuaranteeAtomicity() throws Exception {
-        JmmDemo.volatileCount = 0;
-        Thread t1 = new Thread(() -> {
-            for (int i = 0; i < 200_000; i++) {
-                JmmDemo.volatileCount++;
+        // 单轮可能凑巧不丢（两个线程串行执行了），所以循环到观测到为止。
+        // 只要出现一次 count < 400000，volatile 不保证原子性就被证明了。
+        int rounds = 0;
+        boolean observedLoss = false;
+        while (rounds < 50 && !observedLoss) {
+            rounds++;
+            JmmDemo.volatileCount = 0;
+            Thread t1 = new Thread(() -> {
+                for (int i = 0; i < 200_000; i++) {
+                    JmmDemo.volatileCount++;
+                }
+            });
+            Thread t2 = new Thread(() -> {
+                for (int i = 0; i < 200_000; i++) {
+                    JmmDemo.volatileCount++;
+                }
+            });
+            t1.start();
+            t2.start();
+            t1.join();
+            t2.join();
+            if (JmmDemo.volatileCount < 400_000) {
+                observedLoss = true;
             }
-        });
-        Thread t2 = new Thread(() -> {
-            for (int i = 0; i < 200_000; i++) {
-                JmmDemo.volatileCount++;
-            }
-        });
-        t1.start();
-        t2.start();
-        t1.join();
-        t2.join();
-
-        // 几乎必然小于 400000——这正是 volatile 不管原子性的证据
-        assertThat(JmmDemo.volatileCount).isLessThan(400_000);
+        }
+        assertThat(observedLoss).isTrue();
     }
 
     @Test

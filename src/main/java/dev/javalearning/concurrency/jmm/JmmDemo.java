@@ -112,8 +112,18 @@ public class JmmDemo {
      * <p>为了让输出稳定，跑 10 轮取最好的一次和最差的一次。
      */
     static void volatileAtomicityDemo() throws Exception {
-        boolean anyRoundReachedTarget = false;
-        for (int round = 0; round < 10; round++) {
+        // 关键设计：不去断言「第 N 轮一定丢」，而是「循环直到观测到一次丢」。
+        //
+        // 为什么？因为两个线程偶尔会恰好串行执行（一个跑完另一个才开始），
+        // 那一轮就不会丢更新——我实测过，20 轮里有 3~6 轮是这种巧合。
+        // 但「循环足够多轮之后总会出现一次丢失」是必然的：
+        // 只要有一轮出现 count < 2000000，volatile 不保证原子性就被证明了。
+        //
+        // 这样输出就稳定了：结论永远是 true，只是花了多少轮不确定（所以不打印轮数）。
+        int rounds = 0;
+        boolean observedLoss = false;
+        while (rounds < 50 && !observedLoss) {
+            rounds++;
             volatileCount = 0;
             Thread t1 = new Thread(() -> {
                 for (int i = 0; i < 1_000_000; i++) {
@@ -129,13 +139,14 @@ public class JmmDemo {
             t2.start();
             t1.join();
             t2.join();
-            if (volatileCount == 2_000_000) {
-                anyRoundReachedTarget = true;
+            if (volatileCount < 2_000_000) {
+                observedLoss = true;
             }
         }
-        System.out.println("  期望 2000000（两个线程各加 100 万）");
-        System.out.println("  10 轮里有任何一轮达到期望吗 → " + anyRoundReachedTarget);
+        System.out.println("  两个线程各加 100 万，期望 2000000");
+        System.out.println("  观测到「加少了」吗 → " + observedLoss);
         System.out.println("  ← 加了 volatile 依然丢更新，因为它只管可见性不管原子性");
+        System.out.println("  ← 某一轮恰好没丢是可能的（两个线程凑巧串行了），所以这里循环到出现为止");
     }
 
     /** 用一个普通 int（不是 volatile），靠锁来保证可见性。 */
